@@ -14,23 +14,25 @@ import pickle
 
 class Mongouser(User):
     client = pymongo.MongoClient(os.environ['MDBCONNSTRING'])
-    db = client.loadtest
+    db = client["vectest"]
+    col = db["data"]
 
-    @tag('uc_write')
+    queryCol = db["queries"]
+    allQueries = list(queryCol.aggregate([{"$sample": {"size": 50}}]))
+
+    @tag('uc_vecsearch')
     @task(1)
     def insert_one(self):
-        print('upsert one')
         try:
+            random_query = random.choice(self.allQueries)
+            if(random.random() > 0.5):
+                vec = random_query["embedding_syn"]
+            else:
+                vec = random_query["embedding_orig"]
+            
             tic = time.time()
-            # 11kb ascii block random worst case scenario for compression
-            noise = ''.join(random.choices(string.ascii_uppercase + string.digits + string.ascii_lowercase, k = 1024*11))
-            # 16^7 = 268,435,456 possible _id values
-            id = ''.join(random.choices(os.environ['KEYSPACE'] , k = int(os.environ['KEYCOUNT']) )) 
-
-            obj = {"value": bson.Binary(pickle.dumps(noise)), "created": datetime.datetime.now(), "location":os.environ['ISOLOC']   }
-
-            output = self.db.queue.update_one({"_id":id}, {"$set": obj}, upsert=True)
-            self.environment.events.request_success.fire(request_type="pymongo", name="uc_write", response_time=(time.time()-tic), response_length=0)
+            result = self.col.aggregate([{"$vectorSearch": {"queryVector": vec, "path": "embedding", "limit": 3, "index":"nomic"}}])
+            self.environment.events.request_success.fire(request_type="pymongo", name="uc_vecsearch", response_time=(time.time()-tic), response_length=0)
 
         except KeyboardInterrupt:
             print

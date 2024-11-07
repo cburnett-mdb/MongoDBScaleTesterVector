@@ -38,7 +38,7 @@ esac
 echo 
 echo "LOCUST: Building container"
 echo
-docker build -t graboskyc/mongodb-locust-scale:latest -t graboskyc/mongodb-locust-scale:v${nb} .
+docker build -t graboskyc/mongodb-locust-scale:vectest -t graboskyc/mongodb-locust-scale:v${nb} .
 
 echo 
 echo "LOCUST: Starting container"
