@@ -11,6 +11,7 @@ import os
 import string
 import random
 import pickle
+import sys
 
 class Mongouser(User):
     client = pymongo.MongoClient(os.environ['MDBCONNSTRING'])
@@ -22,22 +23,12 @@ class Mongouser(User):
 
     @tag('uc_vecsearch')
     @task(1)
-    def insert_one(self):
-        try:
-            random_query = random.choice(self.allQueries)
-            if(random.random() > 0.5):
-                vec = random_query["embedding_syn"]
-            else:
-                vec = random_query["embedding_orig"]
-            
-            tic = time.time()
-            result = self.col.aggregate([{"$vectorSearch": {"queryVector": vec, "path": "embedding", "limit": 3, "index":"nomic"}}])
-            self.environment.events.request_success.fire(request_type="pymongo", name="uc_vecsearch", response_time=(time.time()-tic), response_length=0)
-
-        except KeyboardInterrupt:
-            print
-            sys.exit(0)
-        except Exception as e:
-            print(f'{datetime.datetime.now()} - DB-CONNECTION-PROBLEM: '
-                f'{str(e)}')
-            connect_problem = True
+    def uc_vecsearch(self):
+        random_query = random.choice(self.allQueries)
+        if(random.random() > 0.5):
+            vec = random_query["embedding_syn"]
+        else:
+            vec = random_query["embedding_orig"]
+        
+        with self.environment.events.request.measure("pymongo", "uc_vecsearch") as request_meta:
+            result = self.col.aggregate([{"$vectorSearch": {"queryVector": vec, "path": "embedding", "limit": 3, "index":"nomic", "numCandidates":100}}])
