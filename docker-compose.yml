@@ -13,9 +13,9 @@ services:
     deploy:
       resources:
         reservations:
-          cpus: '48'
-          memory: '8129M'
-  
+          cpus: '40'
+          memory: 64gb
+
   worker:
     image: graboskyc/mongodb-locust-scale:vectest
     volumes:
@@ -25,7 +25,11 @@ services:
       - worker-variables.env
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: 8
+      resources:
+        reservations:
+          cpus: '4'
+          memory: 16gb
 
 volumes:
   locustdata:
