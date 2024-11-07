@@ -21,6 +21,9 @@ class Mongouser(User):
     queryCol = db["queries"]
     allQueries = list(queryCol.aggregate([{"$sample": {"size": 50}}]))
 
+    envlimit = int(os.environ['VSLIMIT'])
+    candidates = int(os.environ['VSNUMCANDIDATES'])
+
     @tag('uc_vecsearch')
     @task(1)
     def uc_vecsearch(self):
@@ -31,4 +34,4 @@ class Mongouser(User):
             vec = random_query["embedding_orig"]
         
         with self.environment.events.request.measure("pymongo", "uc_vecsearch") as request_meta:
-            result = self.col.aggregate([{"$vectorSearch": {"queryVector": vec, "path": "embedding", "limit": 3, "index":"nomic", "numCandidates":100}}])
+            result = self.col.aggregate([{"$vectorSearch": {"queryVector": vec, "path": "embedding", "limit": self.envlimit, "index":"nomic", "numCandidates":self.candidates}}])
