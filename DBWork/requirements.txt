@@ -1,0 +1,4 @@
+pymongo[srv,tls]
+dnspython
+openai
+nltk
