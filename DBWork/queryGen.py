@@ -4,10 +4,15 @@ import pymongo
 import time
 import random
 from nltk.corpus import wordnet
+from bson.binary import Binary, BinaryVectorDtype
 
-fwapikey = ""
+def generate_bson_vector(vector, vector_dtype):
+   return Binary.from_vector(vector, vector_dtype)
+
+
+fwapikey = "fw_3Zma6AdRJtuThX1NTXpkD9hV"
 fwmodel = "nomic-ai/nomic-embed-text-v1.5"
-connstr = "mongodb+srv://"
+connstr = "mongodb+srv://vscode:fMgiQKiPKJWVrfQ7NZnd@hulu-poc.gtg1b.mongodb.net/?retryWrites=true&w=majority&appName=Hulu-POC&readPreference=nearest"
 
 client = pymongo.MongoClient(connstr)
 db = client["scratch"]
@@ -43,6 +48,8 @@ for doc in docs:
     maxTries = 5
     currTries = 0
     while currTries <= maxTries:
+        if len(subPhraseWords) == 0:
+            break
         # get random item from subPhraseWords
         index = random.randint(0, len(subPhraseWords) -1)
         randomItem = subPhraseWords[index]
@@ -56,6 +63,9 @@ for doc in docs:
         currTries += 1
     newSentence = " ".join(subPhraseWords)
 
+    if len(subPhraseWords) == 0:
+        break
+
     doc = {}
     doc["model"] = fwmodel
     doc["description"] = desc
@@ -64,15 +74,17 @@ for doc in docs:
 
     oresp = client.embeddings.create(
         model=fwmodel,
+        dimensions=64,
         input=doc["search_orig"]
     )
-    doc["embedding_orig"] = oresp.data[0].embedding
+    doc["embedding_orig"] = generate_bson_vector(oresp.data[0].embedding, BinaryVectorDtype.FLOAT32)
 
     sresp = client.embeddings.create(
         model=fwmodel,
+        dimensions=64,
         input=doc["search_orig"]
     )
-    doc["embedding_syn"] = sresp.data[0].embedding
+    doc["embedding_syn"] = generate_bson_vector(sresp.data[0].embedding, BinaryVectorDtype.FLOAT32)
     
-    print(doc)
+    # print(doc)
     dstcol.insert_one(doc)

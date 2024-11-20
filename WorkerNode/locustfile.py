@@ -15,11 +15,12 @@ import sys
 
 class Mongouser(User):
     client = pymongo.MongoClient(os.environ['MDBCONNSTRING'])
-    db = client["vectest"]
+    db = client["scratch"]
     col = db["data"]
 
     queryCol = db["queries"]
     allQueries = list(queryCol.aggregate([{"$sample": {"size": 50}}]))
+    print(allQueries)
 
     envlimit = int(os.environ['VSLIMIT'])
     candidates = int(os.environ['VSNUMCANDIDATES'])

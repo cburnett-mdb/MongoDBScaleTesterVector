@@ -2,7 +2,7 @@ version: '3.0'
 
 services:
   master:
-    image: graboskyc/mongodb-locust-scale:vectest
+    image: 979559056307.dkr.ecr.us-east-1.amazonaws.com/cburnettmdb:latest
     ports:
      - "8089:8089"
     volumes:
@@ -17,7 +17,7 @@ services:
           memory: 64gb
 
   worker:
-    image: graboskyc/mongodb-locust-scale:vectest
+    image: 979559056307.dkr.ecr.us-east-1.amazonaws.com/cburnettmdb:latest
     volumes:
       - locustdata:/mnt/locust
     command: --worker --master-host master
