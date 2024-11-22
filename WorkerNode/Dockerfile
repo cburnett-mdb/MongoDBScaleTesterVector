@@ -1,6 +1,6 @@
 FROM locustio/locust
 LABEL maintainer="charles.burnett@mongodb.com"
-LABEL version="1.0.7"
+LABEL version="1.0.47"
 
 WORKDIR /tmp/locust 
 COPY ./locustfile.py ./

@@ -38,6 +38,7 @@ esac
 echo 
 echo "LOCUST: Building container"
 echo
+# docker build -t cburnettmdb/mongodb-locust-scale:vectest -t cburnettmdb/mongodb-locust-scale:v${nb} .
 docker build --platform linux/x86_64 -t cburnettmdb/mongodb-locust-scale:vectest -t cburnettmdb/mongodb-locust-scale:v${nb} .
 
 echo 

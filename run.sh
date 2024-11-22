@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose up --scale worker=2
+docker-compose -f docker-compose.local.yml up --scale worker=2

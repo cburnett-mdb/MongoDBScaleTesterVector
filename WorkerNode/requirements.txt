@@ -3,4 +3,3 @@ mysql-connector-python>=8.0.22
 pymongo
 dnspython
 locust
-bson
